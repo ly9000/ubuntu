@@ -1,1 +1,55 @@
+#!/bin/bash
 
+# Hàm in thông báo có màu
+function print_info() {
+    echo -e "\033[1;34m👉 $1\033[0m"
+    sleep 3
+}
+
+function print_success() {
+    echo -e "\033[0;32m✅ $1\033[0m"
+    sleep 2
+}
+
+function print_warning() {
+    echo -e "\033[1;33m⚠️ $1\033[0m"
+    sleep 2
+}
+
+# Cập nhật hệ thống
+print_info "Bắt đầu cập nhật hệ thống..."
+apt update && apt upgrade -y
+print_success "Đã cập nhật xong."
+
+# Cài đặt các gói cơ bản
+print_info "Tiếp tục cài đặt các gói cơ bản..."
+apt install -y openssh-server mc nano curl \
+    mariadb-client mariadb-server \
+    postgresql postgresql-contrib postgresql-client
+print_success "Cài đặt các gói xong."
+
+# Cài đặt Webmin
+print_info "Đang cài đặt Webmin..."
+curl -o webmin-setup-repo.sh https://raw.githubusercontent.com/webmin/webmin/master/webmin-setup-repo.sh
+yes | sh webmin-setup-repo.sh
+apt-get install -y webmin --install-recommends
+print_success "Webmin đã được cài đặt."
+
+# Tạo user
+print_info "Đang tạo user 'thanh' và gán mật khẩu..."
+adduser thanh --gecos "" --disabled-password
+echo "thanh:110289" | chpasswd
+print_success "Tạo user và gán mật khẩu thành công."
+
+# Thêm user vào sudo
+print_info "Thêm user 'thanh' vào nhóm sudo..."
+usermod -aG sudo thanh
+print_success "User đã có quyền sudo."
+
+# Kiểm tra nhóm của user
+print_info "Kiểm tra các nhóm của user:"
+groups thanh
+sleep 2
+
+# Kết thúc
+print_success "Tất cả các bước đã hoàn tất!"
